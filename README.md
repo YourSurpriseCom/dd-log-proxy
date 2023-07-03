@@ -1,4 +1,10 @@
 # Datadog Log Proxy
+![workflow ci](https://github.com/YourSurpriseCom/dd-log-proxy/actions/workflows/ci.yml/badge.svg)
+![workflow release ](https://github.com/YourSurpriseCom/dd-log-proxy/actions/workflows/release.yml/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
+## Overview
 This proxy sends [Monolog](https://github.com/Seldaek/monolog) messages in batches to the Datadog API. The log messages will be send *non blocking* over **UDP** to this proxy and than over **TCP** to the Datadog API. To reduce the amount of requests, messages will be batched and send in one request.
 
 ## PHP Monolog Handler
