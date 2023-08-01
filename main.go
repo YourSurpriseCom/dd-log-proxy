@@ -9,7 +9,12 @@ import (
 	log "github.com/jlentink/yaglogger"
 )
 
+var (
+	version = "dev"
+)
+
 func main() {
+	log.Info("Starting dd-log-proxy version %s", version)
 
 	switch strings.ToLower(os.Getenv("DEBUG_LEVEL")) {
 	case "info":
@@ -23,7 +28,6 @@ func main() {
 	default:
 		log.SetLevel(log.LevelInfo)
 	}
-
 	log.Debug("Validating environment..")
 	config.Validate()
 
