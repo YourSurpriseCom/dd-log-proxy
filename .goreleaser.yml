@@ -16,8 +16,6 @@ builds:
     goarm:
       - 6
       - 7
-    ldflags:
-      - -X main.version={{.Version}}
     mod_timestamp: "{{ .CommitTimestamp }}"
 archives:
   - format: tar.gz
