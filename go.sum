@@ -1,5 +1,5 @@
-github.com/DataDog/datadog-api-client-go/v2 v2.18.0 h1:QkX1vY1JtvDeF6N6EarPrJMHlerVGdTvGQOUWqfeVDs=
-github.com/DataDog/datadog-api-client-go/v2 v2.18.0/go.mod h1:lHlfhsNQ2qZclvpVQTfrGowUDIdIzAao38A05f9EQpc=
+github.com/DataDog/datadog-api-client-go/v2 v2.19.0 h1:Wvz/63/q39EpVwSH1T8jVyRvPcMfEABenU7sD3dO2Lc=
+github.com/DataDog/datadog-api-client-go/v2 v2.19.0/go.mod h1:oD5Lx8Li3oPRa/BSBenkn4i48z+91gwYORF/+6ph71g=
 github.com/DataDog/zstd v1.5.2 h1:vUG4lAyuPCXO0TLbXvPv7EB7cNK1QV/luu55UHLrrn8=
 github.com/DataDog/zstd v1.5.2/go.mod h1:g4AWEaM3yOg3HYfnJ3YIawPnVdXJh9QME85blwSAmyw=
 github.com/goccy/go-json v0.10.2 h1:CrxCmQqYDkv1z7lO7Wbh2HN93uovUHgrECaO5ZrCXAU=
@@ -10,6 +10,7 @@ github.com/golang/protobuf v1.5.3 h1:KhyjKVUg7Usr/dYsdSqoFveMYd5ko72D+zANwlG1mmg
 github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
+github.com/google/go-cmp v0.5.9/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/jlentink/yaglogger v0.0.5 h1:JC4ZwvQ/Kp5FcAJ3ZXKXAbcfV5AOoiZsHTnA9xt1BpE=
 github.com/jlentink/yaglogger v0.0.5/go.mod h1:aXmFgQ+eb3wLwDwmxs9/ZdxowEdfS8Rq9ksoQ6TUU/Q=
 github.com/logrusorgru/aurora/v3 v3.0.0 h1:R6zcoZZbvVcGMvDCKo45A9U/lzYyzl5NfYIvznmDfE4=
