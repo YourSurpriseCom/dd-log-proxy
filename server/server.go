@@ -92,7 +92,14 @@ func handleLogEntries(waitGroup *sync.WaitGroup, serverContext context.Context, 
 	for {
 		logEntryBatch := createBatch(serverContext, channel, maxItemsInBatch, maxWaitTime)
 		if len(logEntryBatch) > 0 {
-			datadog.SendToDatadog(logEntryBatch)
+			err := datadog.SendToDatadog(logEntryBatch)
+			if err != nil {
+				// Try again to mitigate incidental network issues
+				err = datadog.SendToDatadog(logEntryBatch)
+				if err != nil {
+					log.Error("Could not send batch of size %d to Datadog after 2 attempts: %v", len(logEntryBatch), err)
+				}
+			}
 		} else {
 			log.Debug("Nothing to send!")
 		}
