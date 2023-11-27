@@ -1,9 +1,13 @@
 package server
 
 import (
+	"context"
 	"dd-log-proxy/logentry"
 	"net"
+	"os"
+	"sync"
 	"testing"
+	"time"
 )
 
 func Test_handleUDPMessage(t *testing.T) {
@@ -63,4 +67,22 @@ func Test_waitForUDPMessageFailure(t *testing.T) {
 	go waitForUDPMessage(channel, udpServer)
 
 	udpServer.Close()
+}
+
+func Test_handleLogEntriesRespectsContextCancels(t *testing.T) {
+	var waitGroup sync.WaitGroup
+	defer waitGroup.Wait()
+
+	os.Setenv("BATCH_SIZE", "10")
+	os.Setenv("BATCH_WAIT_IN_SECONDS", "10")
+
+	channel := make(chan logentry.LogEntry)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go handleLogEntries(&waitGroup, ctx, channel)
+
+	// Wait for the goroutine to have incremented the waitGroup
+	time.Sleep(50 * time.Millisecond)
 }
