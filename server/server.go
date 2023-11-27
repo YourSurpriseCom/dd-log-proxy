@@ -34,7 +34,7 @@ func Start() {
 
 	udpServer, err := net.ListenPacket("udp", os.Getenv("HOST")+":"+os.Getenv("PORT"))
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal("Could not start UDP server on '%s': %v", os.Getenv("HOST")+":"+os.Getenv("PORT"), err)
 	}
 
 	go waitForUDPMessage(channel, udpServer)

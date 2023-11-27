@@ -4,8 +4,6 @@ import (
 	"dd-log-proxy/logentry"
 	"net"
 	"testing"
-
-	log "github.com/jlentink/yaglogger"
 )
 
 func Test_handleUDPMessage(t *testing.T) {
@@ -35,14 +33,14 @@ func Test_handleWrongUDPMessage(t *testing.T) {
 
 func Test_waitForUDPMessage(t *testing.T) {
 	udpServer, err := net.ListenPacket("udp", "127.0.0.1:1337")
-	defer udpServer.Close()
 	if err != nil {
-		log.Fatal(err.Error())
+		t.Fatal("could not start udpServer: ", err)
 	}
+	defer udpServer.Close()
 
 	conn, err := net.Dial("udp", "127.0.0.1:1337")
 	if err != nil {
-		t.Error("could not connect to server: ", err)
+		t.Error("could not connect to server:", err)
 	}
 
 	channel := make(chan logentry.LogEntry)
@@ -57,7 +55,7 @@ func Test_waitForUDPMessage(t *testing.T) {
 func Test_waitForUDPMessageFailure(t *testing.T) {
 	udpServer, err := net.ListenPacket("udp", "127.0.0.1:1337")
 	if err != nil {
-		log.Fatal(err.Error())
+		t.Fatal("could not start udpServer:", err)
 	}
 
 	channel := make(chan logentry.LogEntry)
