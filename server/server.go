@@ -9,8 +9,10 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
+	"time"
 
 	log "github.com/jlentink/yaglogger"
 )
@@ -65,7 +67,6 @@ func waitForUDPMessage(channel chan logentry.LogEntry, udpServer net.PacketConn)
 }
 
 func handleUDPMessage(addr net.Addr, buf []byte, channel chan logentry.LogEntry) {
-
 	var logEntry logentry.LogEntry
 	b := bytes.Trim(buf, "\x00")
 	if err := json.Unmarshal(b, &logEntry); err != nil {
@@ -80,8 +81,16 @@ func handleLogEntries(waitGroup *sync.WaitGroup, serverContext context.Context, 
 	waitGroup.Add(1)
 	defer waitGroup.Done()
 
+	maxItemsInBatch, maxItemsInBatchError := strconv.Atoi(os.Getenv("BATCH_SIZE"))
+	maxWaitTimeInSeconds, maxWaitTimeInSecondsError := strconv.Atoi(os.Getenv("BATCH_WAIT_IN_SECONDS"))
+	maxWaitTime := time.Duration(maxWaitTimeInSeconds) * time.Second
+
+	if maxItemsInBatchError != nil || maxWaitTimeInSecondsError != nil {
+		log.Fatal("Unable to retrieve batch config from environment variables!")
+	}
+
 	for {
-		logEntryBatch := createBatch(serverContext, channel)
+		logEntryBatch := createBatch(serverContext, channel, maxItemsInBatch, maxWaitTime)
 		if len(logEntryBatch) > 0 {
 			datadog.SendToDatadog(logEntryBatch)
 		} else {
