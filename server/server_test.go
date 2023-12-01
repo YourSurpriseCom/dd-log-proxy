@@ -1,11 +1,13 @@
 package server
 
 import (
+	"context"
 	"dd-log-proxy/logentry"
 	"net"
+	"os"
+	"sync"
 	"testing"
-
-	log "github.com/jlentink/yaglogger"
+	"time"
 )
 
 func Test_handleUDPMessage(t *testing.T) {
@@ -35,14 +37,14 @@ func Test_handleWrongUDPMessage(t *testing.T) {
 
 func Test_waitForUDPMessage(t *testing.T) {
 	udpServer, err := net.ListenPacket("udp", "127.0.0.1:1337")
-	defer udpServer.Close()
 	if err != nil {
-		log.Fatal(err.Error())
+		t.Fatal("could not start udpServer: ", err)
 	}
+	defer udpServer.Close()
 
 	conn, err := net.Dial("udp", "127.0.0.1:1337")
 	if err != nil {
-		t.Error("could not connect to server: ", err)
+		t.Error("could not connect to server:", err)
 	}
 
 	channel := make(chan logentry.LogEntry)
@@ -57,7 +59,7 @@ func Test_waitForUDPMessage(t *testing.T) {
 func Test_waitForUDPMessageFailure(t *testing.T) {
 	udpServer, err := net.ListenPacket("udp", "127.0.0.1:1337")
 	if err != nil {
-		log.Fatal(err.Error())
+		t.Fatal("could not start udpServer:", err)
 	}
 
 	channel := make(chan logentry.LogEntry)
@@ -65,4 +67,22 @@ func Test_waitForUDPMessageFailure(t *testing.T) {
 	go waitForUDPMessage(channel, udpServer)
 
 	udpServer.Close()
+}
+
+func Test_handleLogEntriesRespectsContextCancels(t *testing.T) {
+	var waitGroup sync.WaitGroup
+	defer waitGroup.Wait()
+
+	os.Setenv("BATCH_SIZE", "10")
+	os.Setenv("BATCH_WAIT_IN_SECONDS", "10")
+
+	channel := make(chan logentry.LogEntry)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go handleLogEntries(&waitGroup, ctx, channel)
+
+	// Wait for the goroutine to have incremented the waitGroup
+	time.Sleep(50 * time.Millisecond)
 }

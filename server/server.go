@@ -9,8 +9,10 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
+	"time"
 
 	log "github.com/jlentink/yaglogger"
 )
@@ -32,7 +34,7 @@ func Start() {
 
 	udpServer, err := net.ListenPacket("udp", os.Getenv("HOST")+":"+os.Getenv("PORT"))
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal("Could not start UDP server on '%s': %v", os.Getenv("HOST")+":"+os.Getenv("PORT"), err)
 	}
 
 	go waitForUDPMessage(channel, udpServer)
@@ -65,7 +67,6 @@ func waitForUDPMessage(channel chan logentry.LogEntry, udpServer net.PacketConn)
 }
 
 func handleUDPMessage(addr net.Addr, buf []byte, channel chan logentry.LogEntry) {
-
 	var logEntry logentry.LogEntry
 	b := bytes.Trim(buf, "\x00")
 	if err := json.Unmarshal(b, &logEntry); err != nil {
@@ -80,10 +81,25 @@ func handleLogEntries(waitGroup *sync.WaitGroup, serverContext context.Context, 
 	waitGroup.Add(1)
 	defer waitGroup.Done()
 
+	maxItemsInBatch, maxItemsInBatchError := strconv.Atoi(os.Getenv("BATCH_SIZE"))
+	maxWaitTimeInSeconds, maxWaitTimeInSecondsError := strconv.Atoi(os.Getenv("BATCH_WAIT_IN_SECONDS"))
+	maxWaitTime := time.Duration(maxWaitTimeInSeconds) * time.Second
+
+	if maxItemsInBatchError != nil || maxWaitTimeInSecondsError != nil {
+		log.Fatal("Unable to retrieve batch config from environment variables!")
+	}
+
 	for {
-		logEntryBatch := createBatch(serverContext, channel)
+		logEntryBatch := createBatch(serverContext, channel, maxItemsInBatch, maxWaitTime)
 		if len(logEntryBatch) > 0 {
-			datadog.SendToDatadog(logEntryBatch)
+			err := datadog.SendToDatadog(logEntryBatch)
+			if err != nil {
+				// Try again to mitigate incidental network issues
+				err = datadog.SendToDatadog(logEntryBatch)
+				if err != nil {
+					log.Error("Could not send batch of size %d to Datadog after 2 attempts: %v", len(logEntryBatch), err)
+				}
+			}
 		} else {
 			log.Debug("Nothing to send!")
 		}

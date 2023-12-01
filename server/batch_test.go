@@ -3,12 +3,15 @@ package server
 import (
 	"context"
 	"dd-log-proxy/logentry"
-	"os"
 	"sync"
 	"testing"
+	"time"
 )
 
 func Test_createBatch(t *testing.T) {
+	var waitGroup sync.WaitGroup
+	defer waitGroup.Wait()
+
 	channel := make(chan logentry.LogEntry)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -24,16 +27,14 @@ func Test_createBatch(t *testing.T) {
 		SpanId:   "span1",
 	}
 
-	os.Setenv("BATCH_SIZE", "1")
-	os.Setenv("BATCH_WAIT_IN_SECONDS", "1")
-
-	go testBatch(t, ctx, channel)
+	go testBatch(&waitGroup, t, ctx, channel, 1, 1*time.Second, 1)
 
 	channel <- logEntry
-
 }
+
 func Test_createBatchNotFull(t *testing.T) {
 	var waitGroup sync.WaitGroup
+	defer waitGroup.Wait()
 
 	channel := make(chan logentry.LogEntry)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -50,21 +51,18 @@ func Test_createBatchNotFull(t *testing.T) {
 		SpanId:   "span1",
 	}
 
-	os.Setenv("BATCH_SIZE", "10")
-	os.Setenv("BATCH_WAIT_IN_SECONDS", "1")
-
-	go testBatchNotFull(&waitGroup, t, ctx, channel)
+	go testBatch(&waitGroup, t, ctx, channel, 10, 1*time.Second, 1)
 
 	channel <- logEntry
-
-	waitGroup.Wait()
-
 }
+
 func Test_createBatchNotFullCancel(t *testing.T) {
 	var waitGroup sync.WaitGroup
+	defer waitGroup.Wait()
 
 	channel := make(chan logentry.LogEntry)
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	logEntry := logentry.LogEntry{
 		Service:  "test",
@@ -77,37 +75,48 @@ func Test_createBatchNotFullCancel(t *testing.T) {
 		SpanId:   "span1",
 	}
 
-	os.Setenv("BATCH_SIZE", "10")
-	os.Setenv("BATCH_WAIT_IN_SECONDS", "10")
-
-	go testBatchNotFull(&waitGroup, t, ctx, channel)
+	go testBatch(&waitGroup, t, ctx, channel, 10, 1*time.Second, 1)
 
 	channel <- logEntry
-
-	//Cancel test and wait on batch to be returned
-	cancel()
-	waitGroup.Wait()
-
 }
 
-func testBatch(t *testing.T, serverContext context.Context, channel chan logentry.LogEntry) {
+func Test_batchSentWhenFullOrTimeout(t *testing.T) {
+	var waitGroup sync.WaitGroup
+	defer waitGroup.Wait()
 
-	batch := createBatch(serverContext, channel)
-	got := len(batch)
-	want := 1
+	channel := make(chan logentry.LogEntry, 50)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	if got != want {
-		t.Errorf("Output %q not equal to expected %q", got, want)
+	// Fill the channel's buffer
+	for i := 0; i < 25; i++ {
+		channel <- logentry.LogEntry{
+			Service:  "test",
+			Message:  "test",
+			Hostname: "unittest",
+			Ddsource: "unittest",
+			Ddtags:   "",
+			Level:    "info",
+			TraceId:  "trace1",
+			SpanId:   "span1",
+		}
 	}
+
+	// Two batches should be full
+	testBatch(&waitGroup, t, ctx, channel, 10, 1*time.Second, 10)
+	testBatch(&waitGroup, t, ctx, channel, 10, 1*time.Second, 10)
+
+	// One should timeout and send partial entries
+	testBatch(&waitGroup, t, ctx, channel, 10, 1*time.Second, 5)
 }
 
-func testBatchNotFull(waitGroup *sync.WaitGroup, t *testing.T, serverContext context.Context, channel chan logentry.LogEntry) {
+func testBatch(waitGroup *sync.WaitGroup, t *testing.T, serverContext context.Context, channel chan logentry.LogEntry, maxItemsInBatch int, maxWaitTime time.Duration, expectedBatchSize int) {
 	waitGroup.Add(1)
 	defer waitGroup.Done()
 
-	batch := createBatch(serverContext, channel)
+	batch := createBatch(serverContext, channel, maxItemsInBatch, maxWaitTime)
 	got := len(batch)
-	want := 1
+	want := expectedBatchSize
 
 	if got != want {
 		t.Errorf("Output %q not equal to expected %q", got, want)
