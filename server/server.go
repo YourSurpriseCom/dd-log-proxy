@@ -34,7 +34,7 @@ func Start() {
 
 	udpServer, err := net.ListenPacket("udp", os.Getenv("HOST")+":"+os.Getenv("PORT"))
 	if err != nil {
-		log.Fatal("Could not start UDP server on '%s': %v", os.Getenv("HOST")+":"+os.Getenv("PORT"), err)
+		log.Fatalf("Could not start UDP server on '%s': %v", os.Getenv("HOST")+":"+os.Getenv("PORT"), err)
 	}
 
 	go waitForUDPMessage(channel, udpServer)
@@ -46,7 +46,7 @@ func Start() {
 	<-sigs
 	log.Debug("Stopping udp server...")
 	if err := udpServer.Close(); err != nil {
-		log.Fatal("Could not close UDP server correcty, error: %s", err.Error())
+		log.Fatalf("Could not close UDP server correcty, error: %s", err.Error())
 	}
 	cancel()
 
