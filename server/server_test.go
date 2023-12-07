@@ -38,7 +38,7 @@ func Test_handleWrongUDPMessage(t *testing.T) {
 func Test_waitForUDPMessage(t *testing.T) {
 	udpServer, err := net.ListenPacket("udp", "127.0.0.1:1337")
 	if err != nil {
-		t.Fatal("could not start udpServer: ", err)
+		t.Fatalf("could not start udpServer: %v", err)
 	}
 	defer udpServer.Close()
 
