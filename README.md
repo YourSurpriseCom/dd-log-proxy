@@ -21,7 +21,7 @@ $logger = new Logger('my_logger');
 $handler = new DataDogUdpHandler("<proxy host>",1053);
 $logger->pushHandler($handler);
 
-$logger->info("This is log message is send non blocking over UDP to datadog!");
+$logger->info("This log message is sent non blocking over UDP to Datadog!");
 ```
 
 More information about the Monolog Datadog UDP Handler can be found [here](https://github.com/YourSurpriseCom/monolog-dd-udp-handler).
