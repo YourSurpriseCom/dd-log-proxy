@@ -47,7 +47,7 @@ func mapLogEntryToDatadogLogItem(logEntry logentry.LogEntry) datadogV2.HTTPLogIt
 		Hostname: datadog.PtrString(logEntry.Hostname),
 		Message:  logEntry.Message,
 		Service:  datadog.PtrString(logEntry.Service),
-		AdditionalProperties: map[string]string{
+		AdditionalProperties: map[string]interface{}{
 			"status":      logEntry.Level,
 			"dd.trace_id": logEntry.TraceId,
 			"dd.span_id":  logEntry.SpanId,
