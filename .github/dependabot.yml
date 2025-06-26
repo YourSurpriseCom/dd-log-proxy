@@ -1,6 +1,17 @@
 version: 2
 updates:
+  # security updates are handled by dependabot security updates within github
   - package-ecosystem: gomod
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
+      day: sunday
+    open-pull-requests-limit: 10
+    groups:
+      minor-patch-updates:
+        update-types:
+          - "minor"
+          - "patch"
+      major-updates:
+        update-types:
+          - "major"
