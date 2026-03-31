@@ -1,17 +1,29 @@
-issues:
-  exclude-rules:
-    - path: (.+)_test.go
-      linters:
+version: "2"
+linters:
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
           - errcheck
           - staticcheck
-
-linters-settings:
-  errcheck:
-    # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
-    # Such cases aren't reported by default.
-    # Default: false
-    check-type-assertions: true
-    # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`.
-    # Such cases aren't reported by default.
-    # Default: false
-    check-blank: true
+        path: (.+)_test.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
