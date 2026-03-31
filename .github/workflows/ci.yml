@@ -15,16 +15,16 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
-        go-version: '1.24.x'
+        go-version: '1.25.x'
         cache: false
   
     - name: Run linting
-      uses: golangci/golangci-lint-action@v3
+      uses: golangci/golangci-lint-action@v9
       with:
         version: latest
         args: --timeout=5m
@@ -35,4 +35,4 @@ jobs:
       - name: Scan for Vulnerabilities in Code
         uses: golang/govulncheck-action@v1
         with:
-          go-version-input: 1.24.x
+          go-version-input: 1.25.x
