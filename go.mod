@@ -3,7 +3,7 @@ module dd-log-proxy
 go 1.25.0
 
 require (
-	github.com/DataDog/datadog-api-client-go/v2 v2.61.0
+	github.com/DataDog/datadog-api-client-go/v2 v2.62.0
 	github.com/jlentink/yaglogger v0.0.7
 )
 
