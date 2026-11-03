@@ -119,6 +119,6 @@ func testBatch(waitGroup *sync.WaitGroup, t *testing.T, serverContext context.Co
 	want := expectedBatchSize
 
 	if got != want {
-		t.Errorf("Output %q not equal to expected %q", got, want)
+		t.Errorf("Output %d not equal to expected %d", got, want)
 	}
 }
